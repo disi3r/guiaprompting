@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva de Prompting para GPT-4o</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+    <style>
+        /* Estilos personalizados */
+        body {
+            font-family: 'Inter', sans-serif; /* Usar fuente Inter */
+            line-height: 1.7; /* Mayor interlineado para mejor lectura */
+        }
+        .section-content {
+            display: none;
+            animation: fadeIn 0.6s ease-in-out; /* Animación más suave */
+        }
+        .section-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); } /* Ligero desplazamiento */
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+            border-radius: 0.375rem 0.375rem 0 0; /* Bordes redondeados arriba */
+        }
+        .tab-button.active {
+            background-color: #1d4ed8; /* Azul oscuro */
+            color: white;
+            border-color: #1d4ed8;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Sombra sutil arriba */
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 0.75rem; /* Bordes más redondeados */
+            display: flex; /* Usar flexbox para alinear contenido */
+            flex-direction: column; /* Apilar contenido verticalmente */
+        }
+        .card:hover {
+            transform: translateY(-7px); /* Mayor desplazamiento */
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+        }
+        .question-container {
+            background-color: #eef2ff; /* Azul muy claro */
+            border-left: 5px solid #3b82f6; /* Borde izquierdo azul más grueso */
+            border-radius: 0.75rem; /* Bordes redondeados */
+        }
+        .answer-option label {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+         .answer-option input:checked + label {
+            font-weight: bold;
+            color: #1d4ed8; /* Color al seleccionar */
+        }
+        .check-answer-button {
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            border-radius: 0.5rem; /* Bordes redondeados */
+        }
+        .check-answer-button:hover {
+            background-color: #2563eb; /* Azul más oscuro */
+        }
+         .check-answer-button:active {
+            transform: scale(0.98); /* Efecto click */
+        }
+        .feedback {
+            animation: fadeIn 0.5s ease-in-out;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .feedback.correct {
+            color: #065f46; /* Verde oscuro */
+            background-color: #d1fae5; /* Verde muy claro */
+            border: 1px solid #34d399; /* Borde verde */
+        }
+        .feedback.incorrect {
+            color: #991b1b; /* Rojo oscuro */
+            background-color: #fee2e2; /* Rojo muy claro */
+            border: 1px solid #f87171; /* Borde rojo */
+        }
+        details {
+            background-color: #f3f4f6; /* Fondo gris claro para detalles */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            color: #1f2937; /* Texto oscuro */
+        }
+        summary:hover {
+            color: #3b82f6; /* Color azul al pasar el mouse */
+        }
+         pre {
+            background-color: #1f2937; /* Fondo oscuro para código */
+            color: #f9fafb; /* Texto claro */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto; /* Scroll horizontal si es necesario */
+            font-family: 'Monospace', monospace; /* Fuente monoespaciada */
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .card-action-button {
+            margin-top: auto; /* Empuja el botón hacia abajo */
+            align-self: flex-start; /* Alinea el botón a la izquierda */
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem; /* Texto más pequeño */
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .card-action-button:hover {
+            background-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-10 font-sans leading-relaxed text-gray-800 min-h-screen">
+
+    <div class="container mx-auto bg-white p-12 rounded-3xl shadow-2xl border border-gray-200">
+        <h1 class="text-5xl font-extrabold mb-10 text-center text-gray-900 drop-shadow-lg">Dominando el Prompting para GPT-4o</h1>
+
+        <div class="flex flex-wrap justify-center mb-10">
+            <button class="tab-button py-3 px-8 text-lg font-semibold text-gray-600 hover:text-blue-700 hover:border-blue-700 border-b-4 border-transparent active" data-section="intro">Introducción</button>
+            <button class="tab-button py-3 px-8 text-lg font-semibold text-gray-600 hover:text-blue-700 hover:border-blue-700 border-b-4 border-transparent" data-section="tips">Consejos Clave</button>
+            <button class="tab-button py-3 px-8 text-lg font-semibold text-gray-600 hover:text-blue-700 hover:border-blue-700 border-b-4 border-transparent" data-section="examples">Ejemplos Prácticos</button>
+            <button class="tab-button py-3 px-8 text-lg font-semibold text-gray-600 hover:text-blue-700 hover:border-blue-700 border-b-4 border-transparent" data-section="diff">Formatos Diff</button>
+            <button class="tab-button py-3 px-8 text-lg font-semibold text-gray-600 hover:text-blue-700 hover:border-blue-700 border-b-4 border-transparent" data-section="conclusion">Conclusión</button>
+        </div>
+
+        <div id="intro" class="section-content active">
+            <h2 class="text-4xl font-bold mb-6 text-gray-800">Introducción: El Poder de GPT-4o</h2>
+            <p class="mb-6 text-gray-700 text-xl">
+                La familia de modelos GPT-4o representa una evolución significativa en la capacidad de los Modelos de Lenguaje Grandes (LLMs). Superando a sus predecesores como GPT-4, GPT-4o destaca en áreas críticas como la <strong>codificación, el seguimiento preciso de instrucciones y el manejo de contextos extremadamente largos</strong>. Esta guía interactiva ha sido cuidadosamente elaborada a partir de pruebas exhaustivas para proporcionarte las estrategias de prompting más efectivas y ayudarte a explotar al máximo el potencial de GPT-4o.
+            </p>
+            <p class="mb-6 text-gray-700 text-xl">
+                Una característica fundamental de GPT-4o es su <strong>adherencia más literal y estricta a las instrucciones</strong>. Mientras que modelos anteriores podían intentar "adivinar" o inferir la intención del usuario de forma más flexible, GPT-4o responde mejor a la especificidad. Esto lo convierte en un modelo altamente <strong>dirigible</strong>; si el resultado no es el esperado, una simple frase que aclare inequívocamente el comportamiento deseado suele ser suficiente para guiarlo. Comprender esta diferencia es crucial y puede requerir una "migración" o ajuste de los prompts utilizados con versiones anteriores.
+            </p>
+             <p class="mb-6 text-gray-700 text-xl">
+                Las <strong>mejores prácticas de prompting</strong> establecidas siguen siendo válidas y potentemente efectivas con GPT-4o. Esto incluye el uso estratégico de ejemplos (few-shot prompting), la formulación de instrucciones claras y detalladas, y la inducción de un proceso de pensamiento o planificación en el modelo para abordar tareas complejas. A lo largo de esta guía, exploraremos cómo aplicar y refinar estas técnicas, así como formatos avanzados para escenarios específicos como la modificación de código.
+            </p>
+
+            <details class="mb-6">
+                <summary>¿Por qué es importante la "migración de prompts" en GPT-4o?</summary>
+                <p class="mt-3 text-gray-700 text-lg">
+                    Debido a que GPT-4o sigue las instrucciones de manera más literal, los prompts que funcionaban bien con modelos anteriores (que eran más flexibles en la interpretación) pueden no producir los resultados óptimos. Ajustar los prompts para ser más explícitos y directos según la naturaleza de GPT-4o es clave para aprovechar sus capacidades mejoradas.
+                </p>
+            </details>
+
+            <div class="question-container p-6 rounded-lg shadow-md">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 1:</p>
+                <p class="mb-4 text-gray-700 text-lg">¿En qué áreas principales destaca GPT-4o en comparación con GPT-4?</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="intro_q1_a" name="intro_q1" value="a">
+                        <label for="intro_q1_a">a) Velocidad de respuesta y coste.</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="intro_q1_b" name="intro_q1" value="b">
+                        <label for="intro_q1_b">b) Capacidades de codificación, seguimiento de instrucciones y contexto largo.</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="intro_q1_c" name="intro_q1" value="c">
+                        <label for="intro_q1_c">c) Generación de imágenes y audio.</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+
+             <div class="question-container p-6 rounded-lg shadow-md mt-8">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 2:</p>
+                <p class="mb-4 text-gray-700 text-lg">GPT-4o tiende a inferir la intención del usuario de manera más flexible que sus predecesores.</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="intro_q2_a" name="intro_q2" value="false">
+                        <label for="intro_q2_a">a) Verdadero</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="intro_q2_b" name="intro_q2" value="true">
+                        <label for="intro_q2_b">b) Falso</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+        </div>
+
+        <div id="tips" class="section-content">
+            <h2 class="text-4xl font-bold mb-6 text-gray-800">Consejos Clave para un Prompting Maestro</h2>
+
+            <p class="mb-8 text-gray-700 text-xl">
+                Dominar el prompting con GPT-4o implica aplicar una serie de técnicas probadas. Aquí detallamos los consejos más importantes para guiar al modelo de manera efectiva y obtener los resultados deseados.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card bg-blue-100 p-7 shadow-lg border border-blue-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-800 flex items-center"><i data-lucide="clipboard" class="mr-3 text-blue-600"></i> 1. Sé Extremadamente Específico</h3>
+                    <p class="text-gray-700 text-lg flex-grow">
+                        La ambigüedad es el enemigo de un buen prompt. Define la tarea con la máxima precisión posible. Incluye detalles sobre el <strong>formato de salida</strong> (JSON, Markdown, tabla, lista), el <strong>tono</strong> (formal, informal, técnico), la <strong>longitud</strong> esperada (número de palabras, frases, párrafos) y cualquier <strong>restricción</strong> (no usar ciertas palabras, incluir información específica). Un prompt detallado reduce la necesidad de iteraciones.
+                    </p>
+                     <details class="mt-4">
+                        <summary>Ejemplo: Especificando el Formato</summary>
+                        <p class="mt-3 text-gray-700 text-lg">
+                            En lugar de "Dame un resumen", prueba con "Resume el siguiente texto en 3 puntos clave usando viñetas y un tono formal".
+                        </p>
+                    </details>
+                     <button class="card-action-button mt-4" data-tip="especifico">Aplicar este Consejo</button>
+                </div>
+                <div class="card bg-green-100 p-7 shadow-lg border border-green-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-green-800 flex items-center"><i data-lucide="book-open" class="mr-3 text-green-600"></i> 2. Utiliza Ejemplos (Few-Shot Prompting)</h3>
+                    <p class="text-gray-700 text-lg flex-grow">
+                        Mostrarle al modelo cómo quieres que se comporte es increíblemente efectivo. Proporciona uno o varios pares de <strong>ejemplos de entrada y la salida esperada</strong>. Esto es especialmente útil para tareas que requieren un estilo o formato particular que es difícil de describir solo con palabras. Los ejemplos actúan como "demostraciones" para el modelo.
+                    </p>
+                     <details class="mt-4">
+                        <summary>Aplicación del Few-Shot</summary>
+                        <p class="mt-3 text-gray-700 text-lg">
+                            Si quieres que el modelo extraiga información de un texto y la formatee de una manera específica, muéstrale un ejemplo de un texto similar y cómo extrajiste y formateaste la información.
+                        </p>
+                    </details>
+                    <button class="card-action-button mt-4" data-tip="few-shot">Aplicar este Consejo</button>
+                </div>
+                <div class="card bg-yellow-100 p-7 shadow-lg border border-yellow-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-yellow-800 flex items-center"><i data-lucide="user" class="mr-3 text-yellow-600"></i> 3. Asigna un Rol</h3>
+                    <p class="text-gray-700 text-lg flex-grow">
+                        Indicarle al modelo que adopte una <strong>"persona" o rol</strong> (ej. "Actúa como un experto en ciberseguridad", "Eres un escritor creativo", "Simula ser un terminal Linux") puede alinear significativamente su respuesta con el conocimiento y estilo asociados a ese rol. Esto es útil para generar contenido desde una perspectiva específica o para simular entornos.
+                    </p>
+                     <details class="mt-4">
+                        <summary>Impacto del Rol</summary>
+                        <p class="mt-3 text-gray-700 text-lg">
+                            Un prompt como "Actúa como un chef y dame una receta para pasta carbonara" producirá una respuesta diferente y probablemente más detallada y con jerga culinaria que un simple "Dame una receta para pasta carbonara".
+                        </p>
+                    </details>
+                    <button class="card-action-button mt-4" data-tip="rol">Aplicar este Consejo</button>
+                </div>
+                 <div class="card bg-red-100 p-7 shadow-lg border border-red-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-red-800 flex items-center"><i data-lucide="git-branch" class="mr-3 text-red-600"></i> 4. Induce la Planificación o "Chain-of-Thought"</h3>
+                    <p class="text-gray-700 text-lg flex-grow">
+                        Para tareas que requieren razonamiento, múltiples pasos o una estructura compleja, pídele al modelo que <strong>primero elabore un plan o que muestre su proceso de pensamiento ("chain-of-thought")</strong> antes de dar la respuesta final. Esto mejora la coherencia lógica, reduce errores y permite depurar el proceso si el resultado no es el esperado. Puedes pedirle explícitamente "Piensa paso a paso" o "Primero, crea un esquema para...".
+                    </p>
+                     <details class="mt-4">
+                        <summary>Chain-of-Thought en Acción</summary>
+                        <p class="mt-3 text-gray-700 text-lg">
+                            Para resolver un problema matemático complejo, pídele: "Resuelve este problema matemático. Primero, explica cada paso de tu razonamiento, y luego da la solución final."
+                        </p>
+                    </details>
+                     <button class="card-action-button mt-4" data-tip="planificacion">Aplicar este Consejo</button>
+                </div>
+                 <div class="card bg-purple-100 p-7 shadow-lg border border-purple-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-purple-800 flex items-center"><i data-lucide="refresh-cw" class="mr-3 text-purple-600"></i> 5. Itera y Refina tus Prompts</h3>
+                    <p class="text-gray-700 text-lg flex-grow">
+                        El prompting es un proceso iterativo. Es raro obtener el resultado perfecto en el primer intento, especialmente para tareas nuevas o complejas. <strong>Analiza la salida del modelo y ajusta tu prompt basándote en lo que observas.</strong> Si el modelo ignora una instrucción, hazla más prominente o repítela. Si el formato es incorrecto, añade más ejemplos o sé más explícito en la descripción del formato.
+                    </p>
+                     <details class="mt-4">
+                        <summary>El Proceso de Refinamiento</summary>
+                        <p class="mt-3 text-gray-700 text-lg">
+                            Si pides un resumen y es demasiado largo, refina: "Resume el texto anterior en <em>exactamente</em> 3 frases cortas."
+                        </p>
+                    </details>
+                    <button class="card-action-button mt-4" data-tip="iteracion">Aplicar este Consejo</button>
+                </div>
+                 <div class="card bg-teal-100 p-7 shadow-lg border border-teal-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-teal-800 flex items-center"><i data-lucide="code" class="mr-3 text-teal-600"></i> 6. Utiliza Delimitadores Claros</h3>
+                    <p class="text-gray-700 text-lg flex-grow">
+                        Cuando incluyas bloques de texto, código o datos dentro de tu prompt que no son parte de las instrucciones, <strong>usa delimitadores claros y distintivos</strong> para separarlos. Esto ayuda al modelo a entender qué parte es la instrucción y qué parte es el contenido a procesar. Ejemplos comunes incluyen triple comilla simple (`'''`), triple comilla doble (`"""`), corchetes (`[]`), o etiquetas XML/HTML (`<text>`, `</text>`).
+                    </p>
+                     <details class="mt-4">
+                        <summary>Ejemplo de Delimitadores</summary>
+                        <p class="mt-3 text-gray-700 text-lg">
+                            "Analiza el sentimiento del siguiente comentario de cliente, delimitado por triple comilla: '''El producto llegó roto y el servicio al cliente fue pésimo.'''"
+                        </p>
+                    </details>
+                    <button class="card-action-button mt-4" data-tip="delimitadores">Aplicar este Consejo</button>
+                </div>
+            </div>
+
+             <div class="question-container p-6 rounded-lg shadow-md mt-10">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 1:</p>
+                <p class="mb-4 text-gray-700 text-lg">¿Cuál de las siguientes técnicas es más efectiva para enseñar a GPT-4o un estilo o formato de salida muy específico?</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="tips_q1_a" name="tips_q1" value="a">
+                        <label for="tips_q1_a">a) Asignar un rol genérico.</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="tips_q1_b" name="tips_q1" value="b">
+                        <label for="tips_q1_b">b) Utilizar ejemplos (Few-Shot Prompting).</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="tips_q1_c" name="tips_q1" value="c">
+                        <label for="tips_q1_c">c) Simplemente pedirle que sea "creativo".</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+
+             <div class="question-container p-6 rounded-lg shadow-md mt-8">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 2:</p>
+                <p class="mb-4 text-gray-700 text-lg">Usar delimitadores claros ayuda a GPT-4o a distinguir entre las instrucciones y el texto que debe procesar.</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="tips_q2_a" name="tips_q2" value="true">
+                        <label for="tips_q2_a">a) Verdadero</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="tips_q2_b" name="tips_q2" value="false">
+                        <label for="tips_q2_b">b) Falso</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+        </div>
+
+        <div id="examples" class="section-content">
+            <h2 class="text-4xl font-bold mb-6 text-gray-800">Ejemplos Prácticos: Prompting en Acción</h2>
+             <p class="mb-8 text-gray-700 text-xl">
+                Ver la teoría en acción es fundamental. Aquí presentamos ejemplos detallados que combinan varios de los consejos clave para lograr resultados precisos y útiles con GPT-4o en diversas tareas.
+            </p>
+
+            <div class="card bg-purple-100 p-7 shadow-lg border border-purple-200 mb-8 flex flex-col">
+                <h3 class="text-2xl font-bold mb-4 text-purple-800 flex items-center"><i data-lucide="file-text" class="mr-3 text-purple-600"></i> Ejemplo 1: Resumen de Documento Técnico</h3>
+                <p class="text-gray-700 text-lg mb-3">
+                    <strong>Objetivo:</strong> Obtener un resumen conciso y técnico de un documento extenso, dirigido a un público con conocimientos previos.
+                </p>
+                 <p class="text-gray-700 text-lg mb-3">
+                    <strong>Prompt Efectivo:</strong>
+                </p>
+                <pre>
+Eres un científico de datos senior.
+Tu tarea es resumir el siguiente documento técnico sobre [Tema Específico], delimitado por triple comilla simple.
+El resumen debe enfocarse en los <strong>hallazgos clave</strong>, la <strong>metodología principal</strong> y las <strong>implicaciones futuras</strong>.
+La salida debe ser en formato Markdown, utilizando encabezados para las secciones principales (Hallazgos Clave, Metodología, Implicaciones) y viñetas para los puntos dentro de cada sección.
+El tono debe ser formal y técnico.
+La longitud total del resumen no debe exceder las 300 palabras.
+
+'''
+[Aquí iría el texto completo del documento técnico extenso]
+'''
+</pre>
+                 <p class="text-gray-700 text-lg mt-4 flex-grow">
+                    <strong>Análisis:</strong> Este prompt es altamente específico. Asigna un rol ("científico de datos senior"), define la tarea (resumir documento técnico), especifica el contenido a incluir (hallazgos, metodología, implicaciones), el formato de salida (Markdown con encabezados y viñetas), el tono (formal y técnico), la longitud máxima (300 palabras) y utiliza delimitadores (`'''`) para el texto de entrada. Esto guía a GPT-4o de manera muy precisa.
+                </p>
+            </div>
+
+             <div class="card bg-orange-100 p-7 shadow-lg border border-orange-200 mb-8 flex flex-col">
+                <h3 class="text-2xl font-bold mb-4 text-orange-800 flex items-center"><i data-lucide="code-2" class="mr-3 text-orange-600"></i> Ejemplo 2: Refactorización de Código con Explicación</h3>
+                <p class="text-gray-700 text-lg mb-3">
+                    <strong>Objetivo:</strong> Mejorar la eficiencia y legibilidad de una función Python existente y obtener una explicación de los cambios.
+                </p>
+                 <p class="text-gray-700 text-lg mb-3">
+                    <strong>Prompt Efectivo:</strong>
+                </p>
+                 <pre>
+Eres un ingeniero de software experto en Python.
+Refactoriza la siguiente función Python para hacerla más eficiente y legible.
+La función está delimitada por ```python.
+Después de refactorizar el código, proporciona una explicación detallada de los cambios realizados y por qué mejoran la función.
+Asegúrate de que la función refactorizada mantenga la misma funcionalidad de entrada y salida.
+
+```python
+# Código Python existente a refactorizar
+def process_data(data_list):
+    result = []
+    for item in data_list:
+        if item > 10:
+            result.append(item * 2)
+        else:
+            result.append(item + 5)
+    return result
+```
+
+</pre>
+                 <p class="text-gray-700 text-lg mt-4 flex-grow">
+                    <strong>Análisis:</strong> Se asigna un rol técnico ("ingeniero de software experto en Python"), se define la tarea (refactorizar código Python), se especifica el objetivo de la refactorización (eficiencia y legibilidad), se utiliza el delimitador de bloque de código (` ```python `), se pide una explicación adicional y se establece una restricción clave (mantener la funcionalidad). Esto guía al modelo no solo a modificar el código, sino también a justificar sus cambios.
+                </p>
+            </div>
+
+             <div class="card bg-cyan-100 p-7 shadow-lg border border-cyan-200 flex flex-col">
+                <h3 class="text-2xl font-bold mb-4 text-cyan-800 flex items-center"><i data-lucide="message-square" class="mr-3 text-cyan-600"></i> Ejemplo 3: Generación de Diálogo con Tono Específico (Few-Shot)</h3>
+                <p class="text-gray-700 text-lg mb-3">
+                    <strong>Objetivo:</strong> Crear un diálogo corto entre dos personajes con un tono sarcástico y humorístico, utilizando ejemplos.
+                </p>
+                 <p class="text-gray-700 text-lg mb-3">
+                    <strong>Prompt Efectivo (Few-Shot):</strong>
+                </p>
+                 <pre>
+Genera un diálogo corto entre dos personajes, Alex y Ben, que tenga un tono sarcástico y humorístico.
+Aquí tienes un ejemplo del estilo que busco:
+
+Entrada: "El coche es rojo, y es muy rapido."
+Salida: "El coche es rojo y es muy rápido."
+
+Entrada: "Ellos van a la tienda a comprar pan."
+Salida: "Ellos van a la tienda para comprar pan."
+
+Ahora, crea un diálogo similar donde discutan sobre [Tema Específico, ej. una reunión aburrida].
+
+</pre>
+                 <p class="text-gray-700 text-lg mt-4 flex-grow">
+                    <strong>Análisis:</strong> Este es un excelente uso del few-shot prompting. La instrucción general establece el objetivo (diálogo sarcástico/humorístico entre Alex y Ben), pero el ejemplo proporcionado es lo que realmente le muestra a GPT-4o el <em>estilo</em> exacto de sarcasmo y humor que se espera. Esto es mucho más efectivo que intentar describir el tono solo con adjetivos.
+                </p>
+            </div>
+
+
+            <div class="question-container p-6 rounded-lg shadow-md mt-10">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 1:</p>
+                <p class="mb-4 text-gray-700 text-lg">En el Ejemplo 1 (Resumen de Documento Técnico), ¿qué elementos del prompt ayudan a asegurar que el resumen esté dirigido a un público técnico?</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="examples_q1_a" name="examples_q1" value="a">
+                        <label for="examples_q1_a">a) Especificar la longitud máxima del resumen.</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="examples_q1_b" name="examples_q1" value="b">
+                        <label for="examples_q1_b">b) Asignar el rol de "científico de datos senior" y especificar el tono "formal y técnico".</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="examples_q1_c" name="examples_q1" value="c">
+                        <label for="examples_q1_c">c) Utilizar delimitadores para el texto del documento.</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+
+             <div class="question-container p-6 rounded-lg shadow-md mt-8">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 2:</p>
+                <p class="mb-4 text-gray-700 text-lg">En el Ejemplo 3 (Generación de Diálogo), el few-shot prompting es menos importante que la instrucción general para definir el tono sarcástico.</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="examples_q2_a" name="examples_q2" value="false">
+                        <label for="examples_q2_a">a) Verdadero</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="examples_q2_b" name="examples_q2" value="true">
+                        <label for="examples_q2_b">b) Falso</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+        </div>
+
+        <div id="diff" class="section-content">
+            <h2 class="text-4xl font-bold mb-6 text-gray-800">Formatos de Diff Efectivos para Modificación de Código</h2>
+             <p class="mb-8 text-gray-700 text-xl">
+                Aunque GPT-4o tiene capacidades de codificación mejoradas, la modificación precisa de bloques de código existentes puede ser un desafío. Las pruebas han demostrado que ciertos formatos de "diff" (diferencia) alternativos son significativamente más efectivos que el formato `diff` tradicional, particularmente porque evitan la dependencia de los números de línea.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card bg-teal-100 p-7 shadow-lg border border-teal-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-teal-800 flex items-center"><i data-lucide="search" class="mr-3 text-teal-600"></i> Formato SEARCH/REPLACE</h3>
+                    <p class="text-gray-700 text-lg mb-3 flex-grow">
+                        Este formato es muy intuitivo. Se le presenta al modelo la <strong>ruta del archivo</strong> (`path/to/file.py`), seguida de un delimitador (`>>>>>>> SEARCH`), el <strong>bloque de código exacto a encontrar</strong> (`def old_function():...`), otro delimitador (`==`), el <strong>bloque de código exacto con el que reemplazarlo</strong> (`def new_function():...`), y finalmente un delimitador de cierre (`<<<<<<< REPLACE`). La clave de su éxito es la precisión en la identificación de los bloques de código.
+                    </p>
+                     <pre>
+# Ejemplo Detallado de Formato SEARCH/REPLACE
+path/to/your/code/file.js
+>>>>>>> SEARCH
+function calculateSum(a, b) {
+    // Calcula la suma
+    return a + b;
+}
+==
+function calculateSumAndLog(a, b) {
+    const sum = a + b;
+    console.log(`La suma de ${a} y ${b} es: ${sum}`);
+    return sum;
+}
+<<<<<<< REPLACE
+</pre>
+                    <p class="text-gray-700 text-lg mt-4">
+                        <strong>Ventajas:</strong> Evita problemas con números de línea cambiantes. Muy claro en lo que se debe buscar y reemplazar.
+                    </p>
+                     <p class="text-gray-700 text-lg mt-2">
+                        <strong>Consideraciones:</strong> Requiere que el modelo identifique <em>exactamente</em> el bloque de código a buscar. Pequeñas diferencias pueden causar fallos.
+                    </p>
+                     <button class="card-action-button mt-4" data-tip="search-replace">Aplicar este Formato</button>
+                </div>
+                <div class="card bg-cyan-100 p-7 shadow-lg border border-cyan-200 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 text-cyan-800 flex items-center"><i data-lucide="code" class="mr-3 text-cyan-600"></i> Formato Pseudo-XML</h3>
+                    <p class="text-gray-700 text-lg mb-3 flex-grow">
+                        Similar al formato SEARCH/REPLACE en su principio, el formato pseudo-XML utiliza <strong>etiquetas que simulan XML</strong> para delimitar las secciones. Se especifica el nombre del archivo (`<file name="...">`), y dentro de él, las secciones a buscar (`<search>...</search>`) y a reemplazar (`<replace>...</replace>`). Este formato también evita los números de línea y se basa en la identificación precisa del contenido.
+                    </p>
+                     <pre>
+&lt;file name="config.json"&gt;
+  &lt;search&gt;
+    "timeout": 5000,
+    "retries": 3
+  &lt;/search&gt;
+  &lt;replace&gt;
+    "timeout": 10000,
+    "retries": 5,
+    "log_level": "info"
+  &lt;/replace&gt;
+&lt;/file&gt;
+</pre>
+                     <p class="text-gray-700 text-lg mt-4">
+                        <strong>Ventajas:</strong> Estructura clara y delimitada. No depende de números de línea.
+                     </p>
+                      <p class="text-gray-700 text-lg mt-2">
+                        <strong>Consideraciones:</strong> Requiere que el modelo respete la estructura de etiquetas y el contenido exacto dentro de <code>&lt;search&gt;</code>.
+                     </p>
+                     <button class="card-action-button mt-4" data-tip="pseudo-xml">Aplicar este Formato</button>
+                </div>
+            </div>
+             <p class="mb-8 text-gray-700 text-xl mt-8">
+                La <strong>clave de la efectividad</strong> de estos formatos de diff alternativos, según las pruebas, reside en dos aspectos fundamentales:
+                <ul class="list-disc list-inside ml-4 mt-4 text-lg text-gray-700">
+                    <li><strong>No utilizan números de línea:</strong> Esto los hace resilientes a cambios menores en el archivo que podrían invalidar los números de línea en un diff tradicional.</li>
+                    <li><strong>Proporcionan el código exacto:</strong> Se especifica explícitamente tanto el bloque de código a encontrar como el bloque de código con el que reemplazarlo, reduciendo la ambigüedad para el modelo.</li>
+                </ul>
+                Al utilizar estos formatos, estás guiando a GPT-4o de manera más directa y menos propensa a errores al realizar modificaciones en el código.
+            </p>
+
+             <div class="question-container p-6 rounded-lg shadow-md mt-10">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 1:</p>
+                <p class="mb-4 text-gray-700 text-lg">Los formatos de diff SEARCH/REPLACE y Pseudo-XML son efectivos para modificar código porque se basan en números de línea precisos.</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="diff_q1_a" name="diff_q1" value="false">
+                        <label for="diff_q1_a">a) Verdadero</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="diff_q1_b" name="diff_q1" value="true">
+                        <label for="diff_q1_b">b) Falso</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+
+             <div class="question-container p-6 rounded-lg shadow-md mt-8">
+                <p class="font-semibold text-xl mb-4 text-gray-800">Pregunta de Comprensión 2:</p>
+                <p class="mb-4 text-gray-700 text-lg">¿Cuál es una ventaja clave de los formatos SEARCH/REPLACE y Pseudo-XML sobre el diff tradicional para GPT-4o?</p>
+                <div class="space-y-3">
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="diff_q2_a" name="diff_q2" value="a">
+                        <label for="diff_q2_a">a) Son más cortos y fáciles de escribir.</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="diff_q2_b" name="diff_q2" value="b">
+                        <label for="diff_q2_b">b) Evitan la dependencia de números de línea y especifican el código exacto a cambiar.</label>
+                    </div>
+                    <div class="answer-option text-gray-700 text-lg">
+                        <input type="radio" id="diff_q2_c" name="diff_q2" value="c">
+                        <label for="diff_q2_c">c) Solo funcionan con archivos de código muy pequeños.</label>
+                    </div>
+                </div>
+                <button class="check-answer-button mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md">Verificar Respuesta</button>
+                <div class="feedback mt-4 text-lg"></div>
+            </div>
+        </div>
+
+         <div id="conclusion" class="section-content">
+            <h2 class="text-4xl font-bold mb-6 text-gray-800">Conclusión: Tu Camino hacia el Prompting Avanzado</h2>
+             <p class="mb-6 text-gray-700 text-xl">
+                Felicidades por completar esta guía interactiva. Has explorado los fundamentos y las técnicas avanzadas para interactuar de manera efectiva con GPT-4o. Recuerda que el prompting es tanto un arte como una ciencia; la práctica y la experimentación son tus mejores aliados.
+            </p>
+             <p class="mb-6 text-gray-700 text-xl">
+                Al aplicar los principios de <strong>especificidad, uso de ejemplos, asignación de roles, inducción de planificación, iteración y uso de delimitadores claros</strong>, estarás sentando las bases para obtener resultados consistentes y de alta calidad. Además, comprender y utilizar formatos de diff alternativos puede ser un cambio radical para tareas de modificación de código.
+            </p>
+             <p class="mb-6 text-gray-700 text-xl">
+                GPT-4o es una herramienta poderosa, y su potencial se desbloquea verdaderamente cuando aprendes a comunicarte con él de manera precisa y estratégica. Continúa experimentando con diferentes prompts, evalúa los resultados y refina tu enfoque. ¡El campo de la ingeniería de IA está en constante evolución, y tu habilidad para interactuar con modelos avanzados como GPT-4o será cada vez más valiosa!
+            </p>
+
+             <div class="card bg-green-100 p-7 shadow-lg border border-green-200 text-center">
+                <h3 class="text-2xl font-bold mb-4 text-green-800">¡Sigue Experimentando!</h3>
+                <p class="text-gray-700 text-lg">
+                    La mejor manera de mejorar es practicando. Intenta aplicar estos consejos a tus propios casos de uso y observa la diferencia.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // JavaScript para manejar la interactividad
+
+        // Define questionContainers globally
+        const questionContainers = document.querySelectorAll('.question-container');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const sections = document.querySelectorAll('.section-content');
+        const cardActionButtons = document.querySelectorAll('.card-action-button');
+
+
+        // Mostrar/ocultar secciones basadas en los tabs
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Desactivar todos los botones y ocultar todas las secciones
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                sections.forEach(sec => sec.classList.remove('active'));
+
+                // Activar el botón clickeado y mostrar la sección correspondiente
+                button.classList.add('active');
+                const targetSectionId = button.dataset.section;
+                document.getElementById(targetSectionId).classList.add('active');
+
+                // Reiniciar el estado de las preguntas al cambiar de sección (opcional, pero limpia la UI)
+                questionContainers.forEach(container => {
+                     const feedback = container.querySelector('.feedback');
+                     if (feedback) {
+                         feedback.textContent = '';
+                         feedback.className = 'feedback mt-4 text-lg';
+                     }
+                     const radios = container.querySelectorAll('input[type="radio"]');
+                     radios.forEach(radio => radio.checked = false);
+                });
+            });
+        });
+
+        // Manejar las preguntas de comprensión (Selección Múltiple y Verdadero/Falso)
+        questionContainers.forEach(container => {
+            const checkButton = container.querySelector('.check-answer-button');
+            const feedback = container.querySelector('.feedback');
+            const radios = container.querySelectorAll('input[type="radio"]');
+
+             checkButton.addEventListener('click', () => {
+                const questionName = radios.length > 0 ? radios[0].name : null;
+                const selectedAnswer = container.querySelector(`input[name="${questionName}"]:checked`);
+
+                // Clear previous feedback
+                feedback.textContent = '';
+                feedback.className = 'feedback mt-4 text-lg';
+
+                if (!selectedAnswer) {
+                    feedback.textContent = 'Por favor, selecciona una respuesta.';
+                    feedback.className = 'feedback incorrect';
+                    return;
+                }
+
+                // Respuestas correctas mapeadas por el nombre del grupo de radio buttons
+                const correctAnswers = {
+                    'intro_q1': 'b',
+                    'intro_q2': 'true',
+                    'tips_q1': 'b',
+                    'tips_q2': 'true',
+                    'examples_q1': 'b',
+                    'examples_q2': 'true',
+                    'diff_q1': 'false',
+                    'diff_q2': 'b'
+                };
+
+                const correctAnswer = correctAnswers[questionName];
+                const userAnswer = selectedAnswer.value;
+
+                if (userAnswer === correctAnswer) {
+                    feedback.textContent = '¡Correcto!';
+                    feedback.className = 'feedback correct';
+                } else {
+                    // Encuentra el texto de la respuesta correcta para mostrar
+                    let correctAnswerText = '';
+                    const correctLabel = container.querySelector(`label[for="${questionName}_${correctAnswer}"]`);
+                    if (correctLabel) {
+                         correctAnswerText = correctLabel.textContent;
+                    } else {
+                         // Para Verdadero/Falso donde el value es 'true'/'false'
+                         correctAnswerText = correctAnswer === 'true' ? 'Verdadero' : 'Falso';
+                    }
+
+                    feedback.textContent = `Incorrecto. La respuesta correcta es: ${correctAnswerText}`;
+                    feedback.className = 'feedback incorrect';
+                }
+            });
+        });
+
+        // Manejar la interactividad de los botones en las tarjetas
+        cardActionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tipType = button.dataset.tip;
+                // Aquí podrías agregar lógica más compleja, como mostrar un modal
+                // o navegar a otra parte. Por ahora, solo registraremos en consola.
+                console.log(`Se hizo clic en el botón "Aplicar este Consejo" para el consejo: ${tipType}`);
+                // Opcional: Cambiar el texto del botón o añadir una marca de verificación
+                button.textContent = '¡Consejo Aplicado!';
+                button.disabled = true; // Deshabilita el botón después de hacer clic
+                button.classList.add('bg-gray-500'); // Cambia el color para indicar que está deshabilitado
+                button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            });
+        });
+
+
+         // Inicializar Lucide icons después de que el DOM esté completamente cargado
+        window.onload = function() {
+            lucide.createIcons();
+        };
+
+    </script>
+
+</body>
+</html>
